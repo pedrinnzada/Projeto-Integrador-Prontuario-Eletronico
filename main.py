@@ -22,7 +22,13 @@ from login import Ui_Form
 from cadastro import Ui_Form as Ui_Cadastro
 from esqueci_senha import Ui_Form as Ui_Esqueci
 from ui_styles import DARK_THEME, LIGHT_THEME
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QLocale
 
+
+
+# FORÇA idioma pt_BR e evita erro de localization
+QLocale.setDefault(QLocale(QLocale.Portuguese, QLocale.Brazil))
 
 
 class LoginWindow(QtWidgets.QWidget):
