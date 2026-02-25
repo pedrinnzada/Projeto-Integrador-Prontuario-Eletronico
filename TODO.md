@@ -1,0 +1,4 @@
+- [ ] Fix MainWindow.__init__() to accept the usuario parameter
+- [ ] Update login query to use 'senha' instead of 'cpf' for password validation
+- [ ] Update cadastrar query to insert 'senha' instead of 'cpf'
+- [ ] Test the application to ensure login and registration work correctly

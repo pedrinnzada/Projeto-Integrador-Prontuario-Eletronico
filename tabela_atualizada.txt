@@ -1,0 +1,923 @@
+CREATE TABLE usuario (
+  id_usuario SERIAL PRIMARY KEY, -- ID numérico (1, 2, 3...)
+  nome_usuario VARCHAR(100) NOT NULL,
+  registro VARCHAR(100) UNIQUE,
+  cpf VARCHAR(100) UNIQUE
+);
+
+CREATE TABLE paciente (
+  -- Agora é INT para casar com o id_usuario (1, 2, 3)
+  cod_profissional INT NOT NULL, 
+  prof_responsavel varchar(100) NOT NULL,
+  nome_completo varchar(100) NOT NULL,
+  data_de_nascimento date NOT NULL,
+  idade int DEFAULT NULL,
+  sexo varchar(50) DEFAULT NULL,
+  estado_civil varchar(50) DEFAULT NULL,
+  profissao varchar(50) DEFAULT NULL,
+  endereco varchar(200) DEFAULT NULL,
+  telefone varchar(20) NOT NULL,
+  responsavel varchar(50) DEFAULT NULL,
+  numero_de_prontuario SERIAL PRIMARY KEY,
+  data_de_emissao_consulta date DEFAULT NULL,
+
+  -- Vínculo de comunicação ajustado
+  CONSTRAINT fk_medico FOREIGN KEY (cod_profissional) REFERENCES usuario (id_usuario)
+);
+
+CREATE TABLE internacao (
+  id_internacao SERIAL PRIMARY KEY,
+  
+  -- CONEXÕES (Comunicação com outras tabelas)
+  -- Vincula ao Paciente (INT para casar com numero_de_prontuario SERIAL)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- Vincula ao Médico (INT para casar com o novo id_usuario SERIAL)
+  id_medico INT NOT NULL,
+
+  motivo_da_internacao varchar(200) DEFAULT NULL,
+  como_ele_chegou varchar(200) DEFAULT NULL,
+  inicio_dos_sintomas varchar(100) DEFAULT NULL,
+  data date DEFAULT CURRENT_DATE, -- Adicionei o preenchimento automático da data atual
+  duracao_dos_sintomas varchar(100) DEFAULT NULL,
+  localizacao varchar(100) DEFAULT NULL,
+  irradiacao varchar(100) DEFAULT NULL,
+  sintomas_associados varchar(200) DEFAULT NULL,
+  tratamentos_ja_realizados varchar(200) DEFAULT NULL,
+  localizacao_da_dor int DEFAULT NULL,
+  tipo_de_dor varchar(50) DEFAULT NULL,
+  avaliacao_de_dor varchar(50) DEFAULT NULL,
+
+  -- REGRAS DE COMUNICAÇÃO (Constraints)
+  -- Garante que o prontuário exista na tabela paciente
+  CONSTRAINT fk_internacao_paciente 
+    FOREIGN KEY (paciente_prontuario) 
+    REFERENCES paciente (numero_de_prontuario),
+    
+  -- Garante que o médico exista na tabela usuario
+  CONSTRAINT fk_internacao_medico 
+    FOREIGN KEY (id_medico) 
+    REFERENCES usuario (id_usuario)
+);
+
+CREATE TABLE sinais_vitais (
+  id_sinais SERIAL PRIMARY KEY,
+  
+  -- CONEXÕES (Comunicação com o ecossistema)
+  -- Vincula ao paciente (INT para casar com paciente)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para casar com sua nova tabela usuario
+  id_medico INT NOT NULL,
+  
+  -- Vincula a uma internação específica (Correto: INT com INT)
+  id_internacao INT DEFAULT NULL,
+
+  pressao_arterial varchar(50) DEFAULT NULL,
+  classificacao_pressao varchar(50) DEFAULT NULL,
+  frequencia_cardiaca_pulso varchar(50) DEFAULT NULL,
+  ritmo varchar(50) DEFAULT NULL,
+  frequencia_respiratoria varchar(50) DEFAULT NULL,
+  tipo varchar(50) DEFAULT NULL,
+  temperatura varchar(50) DEFAULT NULL,
+  classificacao_temperatura varchar(50) DEFAULT NULL,
+  saturacao_de_O2 varchar(50) DEFAULT NULL,
+  
+  -- Registro de quando os sinais foram coletados
+  data_hora_coleta TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE COMUNICAÇÃO (Constraints)
+  CONSTRAINT fk_sinais_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_sinais_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_sinais_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE avaliacao_geral (
+  id_avaliacao SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Comunicação com o sistema)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para ser compatível com id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS
+  estado_geral varchar(250) DEFAULT NULL,
+  nivel_de_consciencia varchar(50) DEFAULT NULL,
+  hidratacao varchar(50) DEFAULT NULL,
+  nutricao varchar(50) DEFAULT NULL,
+  locomocao varchar(50) DEFAULT NULL,
+  orientacao varchar(50) DEFAULT NULL,
+  quanto_ao varchar(50) DEFAULT NULL,
+  comunicacao varchar(50) DEFAULT NULL,
+  causa varchar(50) DEFAULT NULL,
+  atencao varchar(50) DEFAULT NULL,
+  memoria varchar(50) DEFAULT NULL,
+  tipo_memoria varchar(50) DEFAULT NULL,
+  atitude varchar(50) DEFAULT NULL,
+  postura varchar(50) DEFAULT NULL,
+  movimentacao varchar(50) DEFAULT NULL,
+  movimenta_se_com_ajuda varchar(50) DEFAULT NULL,
+  de varchar(50) DEFAULT NULL,
+  expressao_facial varchar(50) DEFAULT NULL,
+  
+  -- Registro automático de data e hora
+  data_avaliacao TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE COMUNICAÇÃO (Constraints)
+  CONSTRAINT fk_avaliacao_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_avaliacao_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_avaliacao_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+CREATE TABLE neurologico (
+  id_neurologico SERIAL PRIMARY KEY,
+
+  -- CONEXÕES
+  paciente_prontuario INT NOT NULL, 
+  id_medico INT NOT NULL,          
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS
+  pupilas varchar(50) DEFAULT NULL,
+  reagentes_a_luz varchar(50) DEFAULT NULL,
+  forca_muscular varchar(50) DEFAULT NULL,
+  reflexos varchar(50) DEFAULT NULL,
+  sensibilidade varchar(50) DEFAULT NULL,
+  escala_de_coma_de_glasgow varchar(50) DEFAULT NULL,
+  abertura_ocular varchar(50) DEFAULT NULL,
+  resposta_verbal varchar(50) DEFAULT NULL,
+  resposta_motora varchar(50) DEFAULT NULL,
+  resposta_pupilar varchar(50) DEFAULT NULL,
+
+  -- Registro de tempo
+  data_exame TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_neuro_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_neuro_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_neuro_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+CREATE TABLE tecidos_cutaneo_e_mucosas (
+  id_tcm SERIAL PRIMARY KEY,
+  
+  -- CONEXÕES (Comunicação entre tabelas)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para conversar com o id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS ORIGINAIS (Preservados exatamente como solicitado)
+  turgor_cutaneo varchar(50) DEFAULT NULL,
+  icterica varchar(50) DEFAULT NULL,
+  cianose varchar(50) DEFAULT NULL,
+  cianose_local varchar(250) DEFAULT NULL,
+  coloracao_da_pele varchar(50) DEFAULT NULL,
+  outras_coloracao_da_pele varchar(250) DEFAULT NULL,
+  presenca_de_pele varchar(50) DEFAULT NULL,
+  ps_local varchar(250) DEFAULT NULL,
+  textura varchar(50) DEFAULT NULL,
+  espessura varchar(50) DEFAULT NULL,
+  elasticidade varchar(50) DEFAULT NULL,
+  mobilidade varchar(50) DEFAULT NULL,
+  edma varchar(50) DEFAULT NULL, 
+  edma_local varchar(250) DEFAULT NULL,
+  cacifo varchar(50) DEFAULT NULL,
+  sensibilidade_dolorosa varchar(50) DEFAULT NULL,
+  sensabilidade_tatil varchar(50) DEFAULT NULL, 
+  sensibilidade_termica varchar(50) DEFAULT NULL,
+  presenca_de_dispositivo varchar(50) DEFAULT NULL,
+  pd_tipo varchar(250) DEFAULT NULL,
+  dispositivo_membro varchar(50) DEFAULT NULL,
+  outro_local varchar(250) DEFAULT NULL,
+  alteracoes_na_integridade_da_pele varchar(250) DEFAULT NULL,
+
+  -- Registro de data e hora
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_tcm_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_tcm_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_tcm_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+
+CREATE TABLE lesoes_planas (
+  id_lp SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Comunicação entre as tabelas)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para alinhar com o id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  id_internacao INT DEFAULT NULL,   
+
+  -- MANCHAS
+  manchas varchar(50) DEFAULT NULL,
+  tipo_das_manchas varchar(50) DEFAULT NULL,
+  local_das_manchas varchar(250) DEFAULT NULL,
+  m_tamanho varchar(50) DEFAULT NULL,
+  m_quantidade varchar(50) DEFAULT NULL,
+  m_formato varchar(50) DEFAULT NULL,
+  m_distribuicao varchar(50) DEFAULT NULL,
+
+  -- LESÕES HEMORRÁGICAS
+  lesoes_hemorragicas varchar(50) DEFAULT NULL,
+  lh_tipo varchar(50) DEFAULT NULL,
+  lh_local varchar(250) DEFAULT NULL,
+  lh_tamanho varchar(50) DEFAULT NULL,
+  lh_quantidade varchar(50) DEFAULT NULL,
+
+  -- LESÕES VASCULARES
+  lesoes_vasculares varchar(50) DEFAULT NULL,
+  lv_tipo varchar(50) DEFAULT NULL,
+  lv_local varchar(250) DEFAULT NULL,
+  lv_tamanho varchar(50) DEFAULT NULL,
+  lv_quantidade varchar(50) DEFAULT NULL,
+  lv_formato varchar(50) DEFAULT NULL,
+  lv_distribuicao varchar(50) DEFAULT NULL,
+
+  -- LESÕES SÓLIDAS
+  lesoes_solidas varchar(50) DEFAULT NULL,
+  ls_tipos varchar(50) DEFAULT NULL,
+  ls_local varchar(250) DEFAULT NULL,
+  ls_tamanho varchar(50) DEFAULT NULL,
+  ls_quantidade varchar(50) DEFAULT NULL,
+  ls_formato varchar(50) DEFAULT NULL,
+  ls_contorno varchar(50) DEFAULT NULL,
+  ls_distribuicao varchar(50) DEFAULT NULL,
+  ls_odor varchar(50) DEFAULT NULL,
+
+  -- CONTEÚDO LÍQUIDO
+  lesoes_com_conteudo_liquido varchar(50) DEFAULT NULL,
+  lcl_tipo varchar(50) DEFAULT NULL,
+  lcl_local varchar(250) DEFAULT NULL,
+  lcl_tamanho varchar(50) DEFAULT NULL,
+  lcl_formato varchar(50) DEFAULT NULL,
+  lcl_quantidade varchar(50) DEFAULT NULL,
+  lcl_distribuicao varchar(50) DEFAULT NULL,
+  lcl_odor varchar(50) DEFAULT NULL,
+  lcl_secrecao varchar(50) DEFAULT NULL,
+  lcl_secrecao_tipo varchar(50) DEFAULT NULL,
+
+  -- SOLUÇÕES DE CONTINUIDADE (Feridas/Úlceras)
+  solucoes_de_continuidade varchar(50) DEFAULT NULL,
+  sc_tipo varchar(50) DEFAULT NULL,
+  sc_local varchar(250) DEFAULT NULL,
+  sc_tamanho varchar(50) DEFAULT NULL,
+  sc_odor varchar(50) DEFAULT NULL,
+  sc_contorno varchar(50) DEFAULT NULL,
+  sc_secrecao varchar(50) DEFAULT NULL,
+  sc_secrecao_tipo varchar(250) DEFAULT NULL,
+
+  -- LESÕES ESCAMATIVAS / CICATRIZES
+  lesoes_escamativas varchar(50) DEFAULT NULL,
+  le_tipo varchar(50) DEFAULT NULL,
+  le_local varchar(250) DEFAULT NULL,
+  le_quantidade varchar(50) DEFAULT NULL,
+  le_prurido varchar(50) DEFAULT NULL,
+  le_atrofia varchar(50) DEFAULT NULL,
+  le_especificar varchar(50) DEFAULT NULL,
+  le_cicatriz varchar(50) DEFAULT NULL,
+  le_c_local varchar(250) DEFAULT NULL,
+  le_c_outras varchar(250) DEFAULT NULL,
+
+  -- Registro de data
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_lp_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_lp_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_lp_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE integridade_dos_membros_superiores_e_inferiores (
+  id SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Comunicação com o sistema)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para alinhar com o id_usuario da sua tabela usuario
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação específica
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Estrutura original preservada)
+  simetria varchar(50) DEFAULT NULL,
+  musculatura varchar(50) DEFAULT NULL,
+  local varchar(250) DEFAULT NULL,
+  mobilidade varchar(50) DEFAULT NULL,
+  coordenacao varchar(50) DEFAULT NULL,
+  sensibilidade varchar(50) DEFAULT NULL,
+  forca varchar(50) DEFAULT NULL,
+  rigidez_articular varchar(50) DEFAULT NULL,
+  derformidade varchar(50) DEFAULT NULL, 
+  limitacoes_de_movimento varchar(50) DEFAULT NULL,
+  alteracoes_vasculares varchar(50) DEFAULT NULL,
+  qual varchar(250) DEFAULT NULL,
+  perfusao_tissular varchar(50) DEFAULT NULL,
+  condicoes_locomotora varchar(250) DEFAULT NULL,
+  formas_de_locomocao varchar(250) DEFAULT NULL,
+  outras varchar(250) DEFAULT NULL,
+
+  -- Registro automático de data e hora
+  data_exame TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE COMUNICAÇÃO (Constraints)
+  CONSTRAINT fk_membros_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_membros_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_membros_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE membros_superiores (
+  id SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Comunicação entre tabelas)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para alinhar com o id_usuario da sua tabela usuario
+  id_medico INT NOT NULL,           
+  
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Estrutura original preservada)
+  sensibilidade varchar(50) DEFAULT NULL,
+  forca_motora varchar(50) DEFAULT NULL,
+  edema_membros_superiores varchar(50) DEFAULT NULL,
+  pulsos_perifericos varchar(50) NOT NULL ,
+  paresia varchar(50) DEFAULT NULL,
+  plegia varchar(50) DEFAULT NULL,
+  amputacoes varchar(50) DEFAULT NULL,
+  descrever varchar(250) DEFAULT NULL,
+  gesso varchar(50) DEFAULT NULL,
+  tala_gessado varchar(50) DEFAULT NULL,
+  dispositivo_venoso varchar(50) DEFAULT NULL,
+  dv_local varchar(250) DEFAULT NULL,
+  lesoes varchar(50) DEFAULT NULL,
+  lesaoes_sobre varchar(250) DEFAULT NULL,
+
+  -- Registro de data e hora automático
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Garantem que a comunicação funcione)
+  CONSTRAINT fk_membros_sup_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_membros_sup_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_membros_sup_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+CREATE TABLE membros_inferiores (
+  id SERIAL PRIMARY KEY,
+
+  -- CONEXÕES
+  paciente_prontuario INT NOT NULL, 
+  id_medico INT NOT NULL, -- Alterado para INT para casar com a tabela usuario
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS
+  sensibilidade varchar(50) DEFAULT NULL,
+  forca_motora varchar(50) DEFAULT NULL,
+  edema_mebros_inferiores varchar(50) NOT NULL, 
+  pulsos_perifericos varchar(50) DEFAULT NULL,
+  paresia varchar(50) DEFAULT NULL,
+  plegia varchar(50) DEFAULT NULL,
+  amputacoes varchar(50) DEFAULT NULL,
+  descrever varchar(250) DEFAULT NULL,
+  gesso varchar(50) DEFAULT NULL,
+  tala_gessado varchar(50) DEFAULT NULL,
+  dispositivo_venoso varchar(50) NOT NULL,
+  dv_local varchar(250) DEFAULT NULL,
+  lesoes varchar(50) DEFAULT NULL,
+  lesaoes_sobre varchar(250) DEFAULT NULL,
+
+  -- Registro de tempo
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_membros_inf_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_membros_inf_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_membros_inf_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+CREATE TABLE unhas (
+  id SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Ponte de comunicação com o sistema)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para casar com o id_usuario da tabela usuario
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação específica
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Estrutura original preservada)
+  unha varchar(50) DEFAULT NULL,
+  implantacao varchar(50) DEFAULT NULL,
+  coloracao varchar(50) NOT NULL,
+  u_outra varchar(250) DEFAULT NULL,
+  espessura varchar(50) DEFAULT NULL,
+  e_outra varchar(250) DEFAULT NULL,
+  superficie varchar(50) DEFAULT NULL,
+  s_outra varchar(250) DEFAULT NULL,
+  brilhoo varchar(50) DEFAULT NULL, 
+  consistencia varchar(50) DEFAULT NULL,
+  leuconiquia varchar(50) DEFAULT NULL,
+  l_qual varchar(250) DEFAULT NULL,
+  onicofagia varchar(50) DEFAULT NULL,
+  condicoes_de_higiene varchar(50) DEFAULT NULL,
+  c_outra varchar(250) DEFAULT NULL,
+  mais_informaco varchar(250) DEFAULT NULL, 
+
+  -- Registro de data e hora automático
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_unhas_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_unhas_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_unhas_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE cranio (
+  id SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Ponte de comunicação com o sistema)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para ser compatível com id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Estrutura Óssea e Inspeção)
+  forma varchar(50) DEFAULT NULL,
+  outro_cranio varchar(250) DEFAULT NULL,
+  simetria varchar(50) NOT NULL,
+  massas varchar(50) DEFAULT NULL,
+  abaulamento varchar(50) DEFAULT NULL,
+  contorno varchar(50) DEFAULT NULL,
+
+  -- COURO CABELUDO E LESÕES
+  escamas varchar(50) DEFAULT NULL,
+  lesoes varchar(50) DEFAULT NULL,
+  cc_tipo varchar(250) DEFAULT NULL,  
+  cc_local varchar(250) DEFAULT NULL,
+  
+  -- CABELOS E HIGIENE
+  cabelos_cor varchar(50) DEFAULT NULL,
+  quantidade varchar(50) DEFAULT NULL,
+  tipo_alteracao_cabelo varchar(250) DEFAULT NULL,
+  localizacao_das_anormalidades varchar(50) DEFAULT NULL,
+  la_outra varchar(250) DEFAULT NULL,
+  prurido varchar(50) DEFAULT NULL,
+  parasitas varchar(50) DEFAULT NULL,
+  condicoes_de_higiene varchar(50) DEFAULT NULL,
+  chs_outra varchar(250) DEFAULT NULL,
+
+  -- Registro de data e hora
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_cranio_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_cranio_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_cranio_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE face (
+  id SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Comunicação entre as tabelas do sistema)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para alinhar com o id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Estrutura original preservada)
+  formato varchar(50) DEFAULT NULL,
+  f_outro varchar(250) DEFAULT NULL,
+  simetria varchar(50) NOT NULL,
+  edema_palpebral varchar(50) NOT NULL,
+  dor_seios_frontais varchar(50) DEFAULT NULL,
+  dor_seios_paranasais varchar(50) DEFAULT NULL,
+  dor_seios_maxilares varchar(50) DEFAULT NULL,
+  outras varchar(250) DEFAULT NULL,
+
+  -- Registro de data e hora para acompanhamento
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_face_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_face_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_face_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE olhos (
+  id_olhos SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Ponte de comunicação com o sistema)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para ser compatível com id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Inspeção Externa e Acuidade)
+  simetricos varchar(50) NOT NULL,
+  distancia varchar(50) DEFAULT NULL,
+  acuidade_visual varchar(50) DEFAULT NULL,
+
+  -- PUPILAS E REATIVIDADE
+  tamanho varchar(50) NOT NULL,
+  fotorreativas varchar(50) NOT NULL,
+  localizacao_fotorreativas varchar(250) DEFAULT NULL,
+  
+  -- ESTRUTURAS OCULARES
+  halo_senil varchar(50) DEFAULT NULL,
+  presenca_de_secrecoes varchar(50) DEFAULT NULL,
+  conjuntiva varchar(50) DEFAULT NULL,
+  esclerotica varchar(50) DEFAULT NULL,
+  coloracao varchar(250) DEFAULT NULL,
+  integridade varchar(5) DEFAULT NULL,
+  descricao_alteracao_olhos varchar(250) DEFAULT NULL,
+  preservada varchar(250) DEFAULT NULL,
+  
+  -- MOTILIDADE E VIAS LACRIMAIS
+  movimentos_oculares varchar(250) NOT NULL,
+  descricao_moviemnto_ocular varchar(250) DEFAULT NULL,
+  forumen_lacrimal varchar(50) DEFAULT NULL,
+  descricao_forumen varchar(250) DEFAULT NULL,
+  outras_obs_olhos varchar(250) DEFAULT NULL,
+
+  -- Registro de data e hora
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_olhos_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_olhos_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_olhos_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE narinas (
+  id_narinas SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Comunicação entre as tabelas)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para ser compatível com id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT DEFAULT NULL,   
+
+  -- EXAME EXTERNO
+  simetria varchar(50) NOT NULL,
+  integridade_preservada varchar(50) DEFAULT NULL,
+  lesoes varchar(50) NOT NULL,
+  edemas_simetria varchar(50) NOT NULL,
+  coloracao_externa varchar(250) DEFAULT NULL,
+
+  -- EXAME INTERNO (CAVIDADE NASAL)
+  cavidade_nasal varchar(50) DEFAULT NULL,
+  integridade_preserva varchar(250) DEFAULT NULL,
+  coloracao_interna varchar(250) DEFAULT NULL,
+  secrecoes varchar(50) NOT NULL,
+  tipo_secrecao_nasal varchar(50) DEFAULT NULL,
+  desvio_de_septo varchar(50) DEFAULT NULL,
+  olfato varchar(250) DEFAULT NULL,
+  outras varchar(250) DEFAULT NULL,
+
+  -- Registro de tempo automático
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_narinas_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_narinas_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_narinas_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+BOCA E FARINGE NÃO ESTÁ AQUI
+
+-- Primeiro, apagamos a versão antiga que estava com erro ou incompleta
+DROP TABLE IF EXISTS pavilhao_auditivo_externo;
+
+-- Agora, criamos a tabela do zero com as correções
+CREATE TABLE pavilhao_auditivo_externo (
+  id_pavilhao SERIAL PRIMARY KEY,
+
+  -- CONEXÕES
+  paciente_prontuario INT NOT NULL, 
+  id_medico INT NOT NULL,           
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS
+  integridade_preservada VARCHAR(50) NOT NULL,
+  presenca_de_cerumen VARCHAR(50) DEFAULT NULL,
+  condicoes_de_higiene VARCHAR(50) DEFAULT NULL,
+  queixa_de_odor VARCHAR(50) NOT NULL,
+  presenca_de_secrecoes VARCHAR(50) NOT NULL,
+  queixa_de_zumbido VARCHAR(50) NOT NULL,
+  acuidade_auditiva VARCHAR(50) NOT NULL,
+  uso_de_aparelho_auditivo_ VARCHAR(50) DEFAULT NULL,
+  implantacao VARCHAR(250) DEFAULT NULL,
+  outras VARCHAR(250) DEFAULT NULL,
+
+  -- Registro de tempo
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_pavilhao_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_pavilhao_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_pavilhao_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE regiao_cervical (
+  id_cervival SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Integração com o prontuário)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para ser compatível com id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Inspeção e Mobilidade)
+  simetrica varchar(50) NOT NULL,
+  central varchar(50) DEFAULT NULL,
+  presenca_de_massas varchar(50) DEFAULT NULL,
+  cicratizes_ varchar(50) DEFAULT NULL, 
+  local varchar(250) DEFAULT NULL,
+  movimentacao varchar(50) NOT NULL,
+  rigidez_de_nuca varchar(50) NOT NULL,
+
+  -- SISTEMA VASCULAR E LINFÁTICO
+  pulso_carotideo varchar(50) NOT NULL,
+  ingurgimento_jugular varchar(50) NOT NULL,
+  fremio_tatil varchar(50) DEFAULT NULL,
+  linfonodos varchar(50) NOT NULL,
+  tireoide varchar(50) DEFAULT NULL,
+  outras varchar(250) DEFAULT NULL,
+
+  -- Registro de tempo automático
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_cervical_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_cervical_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_cervical_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+CREATE TABLE torax (
+  id_torax SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Comunicação entre tabelas)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para ser compatível com id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT DEFAULT NULL,
+
+  -- INSPEÇÃO E FORMA
+  forma varchar(50) NOT NULL,
+  deformidades varchar(50) DEFAULT NULL,
+  tipo_deformidades varchar (250) DEFAULT NULL, 
+  integridade_cutanea varchar(250) DEFAULT NULL,
+  
+  -- FUNÇÃO RESPIRATÓRIA
+  expansibilidade varchar(50) NOT NULL,
+  respiracao varchar(50) NOT NULL,
+  alteracoes varchar(50) DEFAULT NULL,
+  tipo_de_alteracao varchar(50) NOT NULL,
+  Local varchar(250) DEFAULT NULL,
+  
+  -- FUNÇÃO CARDÍACA E OXIGENAÇÃO
+  bulhas_cardiacas varchar(50) NOT NULL,
+  bulhas_dois_tempos varchar(250) DEFAULT NULL,
+  fonese varchar(50) NOT NULL,
+  especificar varchar(250) DEFAULT NULL,
+  oxigenacao varchar(50) NOT NULL,
+
+  -- Registro de tempo automático
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_torax_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_torax_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_torax_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+
+
+
+
+CREATE TABLE mamas (
+  id_mamas_ SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Ponte de comunicação com o sistema)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para ser compatível com id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Inspeção)
+  simetria varchar(10) NOT NULL,
+  forma varchar(50) DEFAULT NULL,
+  mastectomia varchar(50) DEFAULT NULL,
+  planicie_dos_mamilos varchar(50) DEFAULT NULL,
+
+  -- CAMPOS DE PALPAÇÃO (Achados de Massas)
+  palpacao_de_massas varchar(10) DEFAULT NULL,
+  localizacao varchar(50) DEFAULT NULL,
+  consistencia varchar(50) DEFAULT NULL,
+  mobilidade varchar(50) DEFAULT NULL,
+  tamanho varchar(50) DEFAULT NULL,
+  sensibilidade varchar(50) DEFAULT NULL,
+  expressao_mamilar varchar(50) DEFAULT NULL,
+
+  -- Registro de tempo para acompanhamento
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_mamas_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_mamas_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_mamas_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+CREATE TABLE pulmoes (
+  id_pulmoes SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Essenciais para o Prontuário Eletrônico)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para casar com o id_usuario SERIAL da tabela usuario
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação específica
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Ausculta e Sintomas)
+  murmurios_vesiculares varchar(50) NOT NULL,
+  tipos_de_ruidos varchar(50) NOT NULL,
+  tosse varchar(50) NOT NULL,
+  experctoracao varchar(10) NOT NULL, 
+
+  -- Registro de tempo para evolução clínica
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_pulmoes_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_pulmoes_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_pulmoes_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+
+CREATE TABLE abdomen (
+  id_abdomen SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Essenciais para o Prontuário Eletrônico)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para casar com o id_usuario da tabela usuario
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação específica
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPOS CLÍNICOS (Inspeção e Ausculta)
+  formato VARCHAR(50) NOT NULL,
+  simetria VARCHAR(50) NOT NULL,
+  marcas_de_estiramento VARCHAR(10) DEFAULT NULL,
+  integridade VARCHAR(50) DEFAULT NULL,
+  ascultura_abdominal VARCHAR(50) NOT NULL, 
+
+  -- PALPAÇÃO E OUTROS
+  sensibilidade_a_palpacao VARCHAR(50) NOT NULL,
+  outros VARCHAR(250) DEFAULT NULL,
+
+  -- Registro de tempo para evolução clínica
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_abdomen_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_abdomen_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_abdomen_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+CREATE TABLE genituarios (
+  id_genituario SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Ponte de comunicação com o sistema)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para alinhar com o id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT NOT NULL,   
+
+  -- CAMPOS CLÍNICOS
+  condicao varchar(50) NOT NULL,
+  integridade varchar(50) NOT NULL,
+  edemas_geniturio varchar(10) NOT NULL, 
+  lesoes_genituario varchar(10) NOT NULL,
+  secrecoes_secrecoes varchar(10) NOT NULL, 
+  aspecto_genituario varchar(50) NOT NULL,
+  outras varchar(250) NOT NULL,
+
+  -- Registro de tempo automático
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_genit_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_genit_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_genit_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+CREATE TABLE inspecao_anal (
+  id_inspecao_anal SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Essenciais para o Prontuário Eletrônico)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para casar com o id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT NOT NULL,   
+
+  -- CAMPOS CLÍNICOS
+  integrigade varchar(50) NOT NULL, 
+  tipo_alteracao_anal varchar(100) NOT NULL, 
+  informacaoes_adicionais varchar(250) NOT NULL,
+
+  -- Registro de tempo
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE (Constraints)
+  CONSTRAINT fk_anal_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_anal_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_anal_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);
+
+
+CREATE TABLE resumo_geral (
+  id_resumo SERIAL PRIMARY KEY,
+
+  -- CONEXÕES (Cruciais para saber de quem é este resumo)
+  -- Vincula ao paciente (INT)
+  paciente_prontuario INT NOT NULL, 
+  
+  -- AJUSTADO: De UUID para INT para alinhar com o id_usuario SERIAL
+  id_medico INT NOT NULL,           
+  
+  -- Vincula à internação (INT)
+  id_internacao INT DEFAULT NULL,   
+
+  -- CAMPO DE TEXTO (Ideal para descrições longas e detalhadas)
+  anotacoes TEXT DEFAULT NULL, 
+
+  -- Registro de tempo (Saber quando a evolução foi escrita)
+  data_registro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+  -- REGRAS DE INTEGRIDADE
+  CONSTRAINT fk_resumo_paciente FOREIGN KEY (paciente_prontuario) REFERENCES paciente (numero_de_prontuario),
+  CONSTRAINT fk_resumo_medico FOREIGN KEY (id_medico) REFERENCES usuario (id_usuario),
+  CONSTRAINT fk_resumo_internacao FOREIGN KEY (id_internacao) REFERENCES internacao (id_internacao)
+);

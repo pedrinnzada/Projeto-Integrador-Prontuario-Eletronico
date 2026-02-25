@@ -1,0 +1,36 @@
+# Ignore .exe files
+*.exe
+
+# Ignore build and dist directories (compiled Python applications)
+build/
+dist/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ignore virtual environments
+venv/
+env/
+.venv/
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore compiled UI files (if you want to keep source .ui files)
+# *.ui files are typically generated, uncomment if needed
+# *.ui
+
+# Ignore compiled resources
+*.pyc
+*.pyo
